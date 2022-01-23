@@ -1,4 +1,4 @@
-#include "bmp180.h"
+#include "../inc/bmp180.h"
 
 long
 bmp180_get_temperature(struct BMP180_CALIBRATION *calib, long UT)
@@ -10,8 +10,8 @@ bmp180_get_temperature(struct BMP180_CALIBRATION *calib, long UT)
 
 	X1 = (UT - calib->AC6) * (calib->AC5 / 32768);
 	X2 = (calib->MC * 2048) / (X1 + calib->MD);
-	B5 = X1 + X2;
-	T = (B5 + 8)/16;
+	calib->B5 = X1 + X2;
+	T = (calib->B5 + 8)/16;
 
 	return T;
 }

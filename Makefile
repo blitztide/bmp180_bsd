@@ -1,10 +1,4 @@
-CC=cc
-CFLAGS=-g -Wall
-INC=inc
-
-
-build/bmp180: src/main.c inc/bmp180.h
-	${CC} ${CFLAGS} -I${INC} src/main.c src/i2c.c -o build/bmp180
-
-clean:
-	rm build/bmp180
+PROG=bmp180
+SRCS=src/main.c src/i2c.c src/temperature.c src/pressure.c
+MAN=
+.include <bsd.prog.mk>

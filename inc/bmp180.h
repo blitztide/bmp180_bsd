@@ -11,6 +11,7 @@ struct BMP180_CALIBRATION {
 	unsigned short AC6;
 	short B1;
 	short B2;
+	short B5;
 	short MB;
 	short MC;
 	short MD;
