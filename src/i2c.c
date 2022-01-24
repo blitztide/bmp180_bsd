@@ -54,12 +54,12 @@ i2c_get_id(struct device *dev)
 	return buffer;
 }
 
-long
+int16_t
 i2c_get_temperature(struct device *dev)
 {
-	long temperature;
+	volatile int16_t temperature;
 	uint8_t buffer1 = BMP180_RDTEMP;
-	uint8_t buffer2[2];
+	volatile uint8_t buffer2[2];
 	int err;
 
 	// Start temperature collection
@@ -72,7 +72,7 @@ i2c_get_temperature(struct device *dev)
 	err = i2c_get_value(dev,0xF6,1,&buffer1);
 	err = i2c_get_value(dev,0xF7,1,&buffer1 + 1);
 
-	temperature = (buffer2[0] <<8) + buffer2[1];
+	temperature = (int16_t)buffer2;
 
 	return temperature;
 }
@@ -84,47 +84,47 @@ i2c_get_calibration(struct device *dev, struct BMP180_CALIBRATION *cal)
 	
 	i2c_get_value(dev,BMP180_AC1H,1,&buffer);
 	i2c_get_value(dev,BMP180_AC1L,1,&buffer+1);
-	cal->AC1 = (short)*buffer;
+	cal->AC1 = (int16_t)*buffer;
 
 	i2c_get_value(dev,BMP180_AC2H,1,&buffer);
-	i2c_get_value(dev,BMP180_AC2L,1,&buffer);
-	cal->AC2 = (short)*buffer;
+	i2c_get_value(dev,BMP180_AC2L,1,&buffer+1);
+	cal->AC2 = (int16_t)*buffer;
 
 	i2c_get_value(dev,BMP180_AC3H,1,&buffer);
-	i2c_get_value(dev,BMP180_AC3L,1,&buffer);
-	cal->AC3 = (short)*buffer;
+	i2c_get_value(dev,BMP180_AC3L,1,&buffer+1);
+	cal->AC3 = (int16_t)*buffer;
 
 	i2c_get_value(dev,BMP180_AC4H,1,&buffer);
-	i2c_get_value(dev,BMP180_AC4L,1,&buffer);
-	cal->AC4 = (unsigned short)*buffer;
+	i2c_get_value(dev,BMP180_AC4L,1,&buffer+1);
+	cal->AC4 = (uint16_t)*buffer;
 
 	i2c_get_value(dev,BMP180_AC5H,1,&buffer);
-	i2c_get_value(dev,BMP180_AC5L,1,&buffer);
-	cal->AC5 = (unsigned short)*buffer;
+	i2c_get_value(dev,BMP180_AC5L,1,&buffer+1);
+	cal->AC5 = (uint16_t)*buffer;
 
 	i2c_get_value(dev,BMP180_AC6H,1,&buffer);
-	i2c_get_value(dev,BMP180_AC6L,1,&buffer);
-	cal->AC6 = (unsigned short)*buffer;
+	i2c_get_value(dev,BMP180_AC6L,1,&buffer+1);
+	cal->AC6 = (uint16_t)*buffer;
 
 	i2c_get_value(dev,BMP180_B1H,1,&buffer);
-	i2c_get_value(dev,BMP180_B1L,1,&buffer);
-	cal->B1 = (short)*buffer;
+	i2c_get_value(dev,BMP180_B1L,1,&buffer+1);
+	cal->B1 = (int16_t)*buffer;
 
 	i2c_get_value(dev,BMP180_B2H,1,&buffer);
-	i2c_get_value(dev,BMP180_B2L,1,&buffer);
-	cal->B2 = (short)*buffer;
+	i2c_get_value(dev,BMP180_B2L,1,&buffer+1);
+	cal->B2 = (int16_t)*buffer;
 
 	i2c_get_value(dev,BMP180_MBH,1,*buffer);
-	i2c_get_value(dev,BMP180_MBL,1,*buffer);
-	cal->MB = (short)*buffer;
+	i2c_get_value(dev,BMP180_MBL,1,*buffer+1);
+	cal->MB = (int16_t)*buffer;
 
 	i2c_get_value(dev,BMP180_MCH,1,*buffer);
-	i2c_get_value(dev,BMP180_MCL,1,*buffer);
-	cal->MC = (short)*buffer;
+	i2c_get_value(dev,BMP180_MCL,1,*buffer+1);
+	cal->MC = (int16_t)*buffer;
 
 	i2c_get_value(dev,BMP180_MDH,1,*buffer);
-	i2c_get_value(dev,BMP180_MDL,1,*buffer);
-	cal->MD = (short)*buffer;
+	i2c_get_value(dev,BMP180_MDL,1,*buffer+1);
+	cal->MD = (int16_t)*buffer;
 
 	return 0;
 }

@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #define BMP180_ADDR 0xEE
 #define BMP180_ID 0xD0
 #define BMP180_ID_SIZE 1
@@ -27,21 +29,21 @@
 #define BMP180_MDL 0xBF
 
 struct BMP180_CALIBRATION {
-	short AC1;
-	short AC2;
-	short AC3;
-	unsigned short AC4;
-	unsigned short AC5;
-	unsigned short AC6;
-	short B1;
-	short B2;
-	short B5;
-	short MB;
-	short MC;
-	short MD;
+	int16_t AC1;
+	int16_t AC2;
+	int16_t AC3;
+	uint16_t AC4;
+	uint16_t AC5;
+	uint16_t AC6;
+	int16_t B1;
+	int16_t B2;
+	int16_t B5;
+	int16_t MB;
+	int16_t MC;
+	int16_t MD;
 };
 
 struct BMP180_CONF {
-	short oss;
+	int16_t oss;
 	struct BMP180_CALIBRATION *calib;
 };

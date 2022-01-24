@@ -22,14 +22,17 @@ main(int argc, char ** argv)
 	int err;
 	uint8_t id;
 	struct device dev;
-	volatile long UT;
-	volatile long T;
+	volatile int16_t UT;
+	volatile int16_t T;
 	strcpy(dev.name, "/dev/iic0");
 
 	init_device(&dev);
 	
-	if (dev.fd == 0)
+	if (dev.fd <= 0)
+	{
+		printf("Unable to open device: %s\n",dev.name);
 		exit(-1);
+	}
 
 	id = i2c_get_id(&dev);
 	if ( id != 0x55 )
