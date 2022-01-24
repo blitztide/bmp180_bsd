@@ -1,1 +1,0 @@
-src/pressure.o: src/pressure.c src/../inc/bmp180.h

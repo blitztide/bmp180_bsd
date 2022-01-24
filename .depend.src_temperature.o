@@ -1,1 +1,0 @@
-src/temperature.o: src/temperature.c src/../inc/bmp180.h
