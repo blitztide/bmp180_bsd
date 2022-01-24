@@ -1,0 +1,16 @@
+src/i2c.o: src/i2c.c /usr/include/sys/cdefs.h /usr/include/stdio.h \
+  /usr/include/sys/_null.h /usr/include/sys/_types.h \
+  /usr/include/machine/_types.h /usr/include/stdlib.h \
+  /usr/include/fcntl.h /usr/include/sys/ioctl.h \
+  /usr/include/sys/ioccom.h /usr/include/sys/filio.h \
+  /usr/include/sys/sockio.h /usr/include/sys/ttycom.h \
+  /usr/include/sys/_winsize.h /usr/include/err.h /usr/include/errno.h \
+  /usr/include/unistd.h /usr/include/sys/types.h \
+  /usr/include/machine/endian.h /usr/include/sys/_pthreadtypes.h \
+  /usr/include/sys/_stdint.h /usr/include/sys/select.h \
+  /usr/include/sys/_sigset.h /usr/include/sys/_timeval.h \
+  /usr/include/sys/timespec.h /usr/include/sys/_timespec.h \
+  /usr/include/sys/unistd.h /usr/include/string.h /usr/include/strings.h \
+  /usr/include/xlocale/_strings.h /usr/include/xlocale/_string.h \
+  /usr/include/dev/iicbus/iic.h src/../inc/device.h src/../inc/bmp180.h \
+  src/../inc/i2c.h

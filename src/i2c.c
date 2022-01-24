@@ -11,6 +11,7 @@
 
 #include "../inc/device.h"
 #include "../inc/bmp180.h"
+#include "../inc/i2c.h"
 
 
 int
@@ -45,22 +46,108 @@ i2c_get_id(struct device *dev)
 {
 	struct iic_msg msg[2];
 	struct iic_rdwr_data rdwr;
-	uint8_t buffer[1];
+	uint8_t buffer;
 	int err;
 
-	// Create write to id register
+	i2c_get_value(dev,BMP180_ID,BMP180_ID_SIZE,&buffer);
 
-	memset(buffer, BMP180_ID,1);
+	return buffer;
+}
+
+long
+i2c_get_temperature(struct device *dev)
+{
+	long temperature;
+	uint8_t buffer1 = BMP180_RDTEMP;
+	uint8_t buffer2[2];
+	int err;
+
+	// Start temperature collection
+	err = i2c_set_value(dev,BMP180_CTRL,1,&buffer1);
+
+	// Wait for 4.5ms
+	usleep(4500);	
+
+	// Read result
+	err = i2c_get_value(dev,0xF6,1,&buffer1);
+	err = i2c_get_value(dev,0xF7,1,&buffer1 + 1);
+
+	temperature = (buffer2[0] <<8) + buffer2[1];
+
+	return temperature;
+}
+
+int
+i2c_get_calibration(struct device *dev, struct BMP180_CALIBRATION *cal)
+{
+	uint8_t buffer[2];
+	
+	i2c_get_value(dev,BMP180_AC1H,1,&buffer);
+	i2c_get_value(dev,BMP180_AC1L,1,&buffer+1);
+	cal->AC1 = (short)*buffer;
+
+	i2c_get_value(dev,BMP180_AC2H,1,&buffer);
+	i2c_get_value(dev,BMP180_AC2L,1,&buffer);
+	cal->AC2 = (short)*buffer;
+
+	i2c_get_value(dev,BMP180_AC3H,1,&buffer);
+	i2c_get_value(dev,BMP180_AC3L,1,&buffer);
+	cal->AC3 = (short)*buffer;
+
+	i2c_get_value(dev,BMP180_AC4H,1,&buffer);
+	i2c_get_value(dev,BMP180_AC4L,1,&buffer);
+	cal->AC4 = (unsigned short)*buffer;
+
+	i2c_get_value(dev,BMP180_AC5H,1,&buffer);
+	i2c_get_value(dev,BMP180_AC5L,1,&buffer);
+	cal->AC5 = (unsigned short)*buffer;
+
+	i2c_get_value(dev,BMP180_AC6H,1,&buffer);
+	i2c_get_value(dev,BMP180_AC6L,1,&buffer);
+	cal->AC6 = (unsigned short)*buffer;
+
+	i2c_get_value(dev,BMP180_B1H,1,&buffer);
+	i2c_get_value(dev,BMP180_B1L,1,&buffer);
+	cal->B1 = (short)*buffer;
+
+	i2c_get_value(dev,BMP180_B2H,1,&buffer);
+	i2c_get_value(dev,BMP180_B2L,1,&buffer);
+	cal->B2 = (short)*buffer;
+
+	i2c_get_value(dev,BMP180_MBH,1,*buffer);
+	i2c_get_value(dev,BMP180_MBL,1,*buffer);
+	cal->MB = (short)*buffer;
+
+	i2c_get_value(dev,BMP180_MCH,1,*buffer);
+	i2c_get_value(dev,BMP180_MCL,1,*buffer);
+	cal->MC = (short)*buffer;
+
+	i2c_get_value(dev,BMP180_MDH,1,*buffer);
+	i2c_get_value(dev,BMP180_MDL,1,*buffer);
+	cal->MD = (short)*buffer;
+
+	return 0;
+}
+
+int
+i2c_get_value(struct device *dev, uint8_t address, size_t length, uint8_t *buffer)
+{
+	struct iic_msg msg[I2C_MAXLEN];
+	struct iic_rdwr_data rdwr;
+	int err;
+	
+	// Select address for read
+
 	msg[0].slave = BMP180_ADDR;
 	msg[0].flags = !IIC_M_RD;
-	msg[0].len = sizeof(buffer);
-	msg[0].buf = buffer;
+	msg[0].len = 1;
+	msg[0].buf = &address;
 
-	// Create read of id register
+	// Read allocated size;
 	
 	msg[1].slave = BMP180_ADDR;
 	msg[1].flags = IIC_M_RD;
-	msg[1].len = sizeof buffer;
+	msg[1].len = length;
 	msg[1].buf = buffer;
 
 	// Create payload
@@ -69,22 +156,39 @@ i2c_get_id(struct device *dev)
 	rdwr.msgs = msg;
 
 	// Send payload
+	
 	err = ioctl(dev->fd, I2CRDWR, &rdwr);
-	
-	if (err < 0)
-		return 0x00;
-	
-	return *buffer;
+	return err;
 }
 
 int
-i2c_get_calibration(struct device *dev)
+i2c_set_value(struct device *dev, uint8_t address, size_t length, uint8_t *buffer)
 {
-	return 0;
-}
+	struct iic_msg msg[I2C_MAXLEN];
+	struct iic_rdwr_data rdwr;
+	int err;
 
-int
-i2c_get_value(struct device *dev, uint8_t address, size_t length, char *buffer)
-{
-	return 0;
+	// Select address for write
+
+	msg[0].slave = BMP180_ADDR;
+	msg[0].flags = !IIC_M_RD;
+	msg[0].len = 1;
+	msg[0].buf = &address;
+
+	// Read allocated size;
+	
+	msg[1].slave = BMP180_ADDR;
+	msg[1].flags = !IIC_M_RD;
+	msg[1].len = length;
+	msg[1].buf = buffer;
+
+	// Create payload
+	
+	rdwr.nmsgs = 2;
+	rdwr.msgs = msg;
+
+	// Send payload
+	
+	err = ioctl(dev->fd, I2CRDWR, &rdwr);
+	return err;
 }
