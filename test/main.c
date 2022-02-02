@@ -61,6 +61,11 @@ main(int argc, char *argv[])
 		errorcount++;
 	}
 
+	// Test pressure with OSS incorrect
+	oss = 1;
+	P = bmp180_calpressure(&calibration, UP,oss);
+	printf("Test pressure: %ld\n",P);
+
 
 	return errorcount;
 }

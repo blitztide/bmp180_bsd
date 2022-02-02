@@ -1,22 +1,22 @@
 #include "../inc/bmp180.h"
 
 long
-bmp180_calpressure(struct BMP180_CALIBRATION *calib, long UP, short oss)
+bmp180_calpressure(struct BMP180_CALIBRATION *calib, uint32_t UP, int16_t oss)
 {
-	volatile long B6;
-	volatile long X1;
-	volatile long X2;
-	volatile long X3;
-	volatile long B3;
-	volatile long B4;
-	volatile long B7;
-	volatile long P;
+	volatile int32_t B6;
+	volatile int32_t X1;
+	volatile int32_t X2;
+	volatile int32_t X3;
+	volatile int32_t B3;
+	volatile uint32_t B4;
+	volatile uint32_t B7;
+	volatile int32_t P;
 
 	B6 = calib->B5 - 4000;
-	X1 = (calib->B2 * ( (B6 * B6)/4096)) / 2048;
+	X1 = (calib->B2 * ( (B6 * B6) >> 12)) >> 11;
 	X2 = calib->AC2 * (B6 /2048);
 	X3 = X1 + X2;
-	B3 = (((calib->AC1 * 4 + X3) << oss) + 2)/4;
+	B3 = (((calib->AC1 * 4 + X3) << oss) + 2) >> 2;
 	X1 = (calib->AC3 * B6) / 8192;
 	X2 = (calib->B1 * ( (B6 *  B6) / 4096))/ 65536;
 	X3 = (( X1 + X2) + 2) /4;

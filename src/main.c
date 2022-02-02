@@ -26,12 +26,12 @@ main(int argc, char ** argv)
 	struct device dev;
 	volatile int16_t UT;
 	volatile int16_t T;
-	volatile int16_t UP;
-	volatile int16_t P;
+	volatile uint32_t UP;
+	volatile uint32_t P;
 
 	strcpy(dev.name, "/dev/iic0");
 	configuration.calib = &calibration;
-	configuration.oss = 1;
+	configuration.oss = 3;
 
 	init_device(&dev);
 	
@@ -57,14 +57,16 @@ main(int argc, char ** argv)
 	UT = i2c_get_temperature(&dev);
 	T = bmp180_get_temperature(&calibration, UT);
 	T = T/10;
-	printf("Temperature is: %hd°C\n",T);
+	printf("Temperature is: %u°C\n",T);
 
 	// Start Pressure Check
 
 	UP = i2c_get_pressure(&dev,configuration.oss);
-	printf("UP is: %hd\n",UP);
+	printf("UP is: %u\n",UP);
 	P = bmp180_calpressure(&calibration,UP,configuration.oss);
-	printf("Pressure is: %hd\n",P);
+	printf("Pressure is: %u\n",P);
+	P = bmp180_calpressure(&calibration,23843,configuration.oss);
+	printf("Test pressure is: %u\n",P);
 
 	close_device(&dev);
 
