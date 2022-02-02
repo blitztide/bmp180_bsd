@@ -81,12 +81,11 @@ i2c_get_temperature(struct device *dev)
 uint32_t
 i2c_get_pressure(struct device *dev, uint8_t oss)
 {
-	volatile int16_t pressure;
 	uint8_t config = 0x34 + (oss << 6);
-	volatile uint8_t MSB;
-	volatile uint8_t LSB;
-	volatile uint8_t XLSB;
-	volatile int32_t UP;
+	uint8_t MSB;
+	uint8_t LSB;
+	uint8_t XLSB;
+	int32_t UP;
 	int err;
 
 	// Start pressure collection
@@ -118,7 +117,7 @@ i2c_get_pressure(struct device *dev, uint8_t oss)
 	err = i2c_get_value(dev,0xF8,1,&XLSB);
 
 	// Calculate return value
-	UP = (MSB <<16) | (LSB<<8) | (XLSB >> (8-oss));
+	UP = (((MSB <<16) | (LSB<<8) | XLSB) >> (8-oss));
 	return UP;
 }
 
