@@ -13,6 +13,7 @@
 #include "../inc/i2c.h"
 #include "../inc/temperature.h"
 #include "../inc/pressure.h"
+#include "../inc/altitude.h"
 
 static struct BMP180_CALIBRATION calibration;
 static struct BMP180_CONF configuration;
@@ -28,6 +29,8 @@ main(int argc, char ** argv)
 	volatile int16_t T;
 	volatile uint32_t UP;
 	volatile uint32_t P;
+	volatile uint32_t RP;
+	volatile double A;
 
 	strcpy(dev.name, "/dev/iic0");
 	configuration.calib = &calibration;
@@ -65,8 +68,12 @@ main(int argc, char ** argv)
 	printf("UP is: %u\n",UP);
 	P = bmp180_calpressure(&calibration,UP,configuration.oss);
 	printf("Pressure is: %u\n",P);
-	P = bmp180_calpressure(&calibration,23843,configuration.oss);
-	printf("Test pressure is: %u\n",P);
+
+	// Check Altitude
+	RP = 101000;	
+	A = get_altitude(P,RP);
+	printf("Altitude is: %f\n",A);
+
 
 	close_device(&dev);
 
