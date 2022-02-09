@@ -44,9 +44,18 @@ main(int argc, char ** argv)
 		exit(-1);
 	}
 
-	id = i2c_get_id(&dev);
-	if ( id != 0x55 )
+	err = i2c_get_id(&dev, &id);
+	if ( err != 0 )
+	{
+		close_device(&dev);
 		exit(-1);
+	}
+
+	if ( id != 0x55 )
+	{
+		close_device(&dev);
+		exit(-1);
+	}
 	
 	printf("Device ID is %x\n",id);
 
@@ -57,14 +66,28 @@ main(int argc, char ** argv)
 
 	// Temperature
 
-	UT = i2c_get_temperature(&dev);
+	err = i2c_get_temperature(&dev, &UT);
+	
+	if (err != 0)
+	{
+		close_device(&dev);
+		return -1;
+	}
+	
 	T = bmp180_get_temperature(&calibration, UT);
 	T = T/10;
 	printf("Temperature is: %u°C\n",T);
 
 	// Start Pressure Check
 
-	UP = i2c_get_pressure(&dev,configuration.oss);
+	err= i2c_get_pressure(&dev,configuration.oss, &UP);
+
+	if ( err != 0 )
+	{
+		close_device(&dev);
+		return -1;
+	}
+
 	printf("UP is: %u\n",UP);
 	P = bmp180_calpressure(&calibration,UP,configuration.oss);
 	printf("Pressure is: %u\n",P);

@@ -21,10 +21,6 @@ init_device(struct device *dev)
 
 	err = open(dev->name,O_RDWR);
 	
-	if (err < 0) {
-		// Not valid
-	}
-
 	dev->fd = err;
 	return err;
 }
@@ -34,30 +30,33 @@ close_device(struct device *dev)
 {
 	int err;
 
-	err = close(dev->fd);
+	while ( close(dev->fd) != 0 )
+	{
+		// Sleep for 1 second between close calls if unsuccessful
+		usleep(1000);
+	}
 
 	dev->fd = 0;
+	printf("Closing Device\n");
 
 	return err;
 }
 
-uint8_t
-i2c_get_id(struct device *dev)
+int
+i2c_get_id(struct device *dev, uint8_t *buffer)
 {
 	struct iic_msg msg[2];
 	struct iic_rdwr_data rdwr;
-	uint8_t buffer;
 	int err;
 
-	i2c_get_value(dev,BMP180_ID,BMP180_ID_SIZE,&buffer);
+	err = i2c_get_value(dev,BMP180_ID,BMP180_ID_SIZE,buffer);
 
-	return buffer;
+	return err;
 }
 
 uint32_t
-i2c_get_temperature(struct device *dev)
+i2c_get_temperature(struct device *dev, uint32_t *buffer)
 {
-	volatile int16_t temperature;
 	uint8_t buffer1 = BMP180_RDTEMP;
 	uint8_t MSB;
 	uint8_t LSB;
@@ -66,30 +65,39 @@ i2c_get_temperature(struct device *dev)
 	// Start temperature collection
 	err = i2c_set_value(dev,BMP180_CTRL,1,&buffer1);
 
+	if (err != 0)
+		return -1;
+
 	// Wait for 4.5ms
-	usleep(4500);	
+	err = usleep(4500);
+	if (err != 0)
+		return -1;
 
 	// Read result
 	err = i2c_get_value(dev,0xF6,1,&MSB);
-	err = i2c_get_value(dev,0xF7,1,&LSB);
+	err += i2c_get_value(dev,0xF7,1,&LSB);
+	if (err != 0)
+		return -1;
 
-	temperature = (MSB << 8) + LSB;
+	*buffer = (MSB << 8) + LSB;
 
-	return temperature;
+	return 0;
 }
 
 uint32_t
-i2c_get_pressure(struct device *dev, uint8_t oss)
+i2c_get_pressure(struct device *dev, uint8_t oss, uint32_t *buffer)
 {
 	uint8_t config = 0x34 + (oss << 6);
 	uint8_t MSB;
 	uint8_t LSB;
 	uint8_t XLSB;
-	int32_t UP;
 	int err;
 
 	// Start pressure collection
 	err = i2c_set_value(dev,BMP180_CTRL,1,&config);
+
+	if (err != 0)
+		return -1;
 
 	// Wait for required time
 	switch(oss)
@@ -113,12 +121,24 @@ i2c_get_pressure(struct device *dev, uint8_t oss)
 
 	//Read result
 	err = i2c_get_value(dev,0xF6,1,&MSB);
+
+	if (err != 0)
+		return -1;
+	
 	err = i2c_get_value(dev,0xF7,1,&LSB);
+
+	if (err != 0)
+		return -1;
+
 	err = i2c_get_value(dev,0xF8,1,&XLSB);
+	if (err != 0)
+		return -1;
+
 
 	// Calculate return value
-	UP = (((MSB <<16) | (LSB<<8) | XLSB) >> (8-oss));
-	return UP;
+	*buffer = (((MSB <<16) | (LSB<<8) | XLSB) >> (8-oss));
+
+	return 0;
 }
 
 
@@ -127,9 +147,10 @@ i2c_get_calibration(struct device *dev, struct BMP180_CALIBRATION *cal)
 {
 	uint8_t MSB;
 	uint8_t LSB;
+	int err;
 	
-	i2c_get_value(dev,BMP180_AC1H,1,&MSB);
-	i2c_get_value(dev,BMP180_AC1L,1,&LSB);
+	err = i2c_get_value(dev,BMP180_AC1H,1,&MSB);
+	err = i2c_get_value(dev,BMP180_AC1L,1,&LSB);
 	cal->AC1 = (MSB << 8)+LSB;
 
 	i2c_get_value(dev,BMP180_AC2H,1,&MSB);
@@ -204,6 +225,12 @@ i2c_get_value(struct device *dev, uint8_t address, size_t length, uint8_t *buffe
 	// Send payload
 	
 	err = ioctl(dev->fd, I2CRDWR, &rdwr);
+	if ( err != 0 )
+		return -1;
+
+	// Check returned values for sanity if no ioctl error
+	if (*buffer == 0x00 || *buffer == 0xFF)
+		return -1;
 	return err;
 }
 
