@@ -45,8 +45,6 @@ close_device(struct device *dev)
 int
 i2c_get_id(struct device *dev, uint8_t *buffer)
 {
-	struct iic_msg msg[2];
-	struct iic_rdwr_data rdwr;
 	int err;
 
 	err = i2c_get_value(dev,BMP180_ID,BMP180_ID_SIZE,buffer);
