@@ -5,6 +5,7 @@
 #define BMP180_ID_SIZE 1
 #define BMP180_RDTEMP 0x2E
 #define BMP180_CTRL 0xF4
+#define BMP180_CAL_START_ADDR 0xAA
 #define BMP180_AC1H 0xAA
 #define BMP180_AC1L 0xAB
 #define BMP180_AC2H 0xAC
@@ -27,7 +28,9 @@
 #define BMP180_MCL 0xBD
 #define BMP180_MDH 0xBE
 #define BMP180_MDL 0xBF
+#define BMP180_CAL_MAX 22 
 
+#pragma pack(1)
 struct BMP180_CALIBRATION {
 	int16_t AC1;
 	int16_t AC2;
@@ -37,11 +40,12 @@ struct BMP180_CALIBRATION {
 	uint16_t AC6;
 	int16_t B1;
 	int16_t B2;
-	int16_t B5;
 	int16_t MB;
 	int16_t MC;
 	int16_t MD;
+	int16_t B5;
 };
+#pragma options align=reset
 
 struct BMP180_CONF {
 	int16_t oss;

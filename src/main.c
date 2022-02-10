@@ -19,15 +19,15 @@ static struct BMP180_CALIBRATION calibration;
 static struct BMP180_CONF configuration;
 
 int
-main(int argc, char ** argv)
+main()
 {
 
 	int err;
 	uint8_t id;
 	struct device dev;
-	volatile int16_t UT;
+	int32_t UT;
 	volatile int16_t T;
-	volatile uint32_t UP;
+	int32_t UP;
 	volatile uint32_t P;
 	volatile uint32_t RP;
 	volatile double A;
@@ -57,11 +57,10 @@ main(int argc, char ** argv)
 		exit(-1);
 	}
 	
-	printf("Device ID is %x\n",id);
+	printf("Device ID: %x\n",id);
 
 	// Calibration
 
-	printf("Getting Calibration data\n");
 	i2c_get_calibration(&dev,&calibration);
 
 	// Temperature
@@ -76,7 +75,7 @@ main(int argc, char ** argv)
 	
 	T = bmp180_get_temperature(&calibration, UT);
 	T = T/10;
-	printf("Temperature is: %u°C\n",T);
+	printf("Temperature: %u°C\n",T);
 
 	// Start Pressure Check
 
@@ -88,14 +87,13 @@ main(int argc, char ** argv)
 		return -1;
 	}
 
-	printf("UP is: %u\n",UP);
 	P = bmp180_calpressure(&calibration,UP,configuration.oss);
-	printf("Pressure is: %u\n",P);
+	printf("Pressure: %u hPa\n",P/100);
 
 	// Check Altitude
 	RP = 101000;	
 	A = get_altitude(P,RP);
-	printf("Altitude is: %f\n",A);
+	printf("Altitude: %f\n",A);
 
 
 	close_device(&dev);

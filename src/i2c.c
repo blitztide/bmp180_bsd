@@ -28,7 +28,6 @@ init_device(struct device *dev)
 int
 close_device(struct device *dev)
 {
-	int err;
 
 	while ( close(dev->fd) != 0 )
 	{
@@ -37,9 +36,8 @@ close_device(struct device *dev)
 	}
 
 	dev->fd = 0;
-	printf("Closing Device\n");
 
-	return err;
+	return 0;
 }
 
 int
@@ -53,7 +51,7 @@ i2c_get_id(struct device *dev, uint8_t *buffer)
 }
 
 uint32_t
-i2c_get_temperature(struct device *dev, uint32_t *buffer)
+i2c_get_temperature(struct device *dev, int32_t *buffer)
 {
 	uint8_t buffer1 = BMP180_RDTEMP;
 	uint8_t MSB;
@@ -83,7 +81,7 @@ i2c_get_temperature(struct device *dev, uint32_t *buffer)
 }
 
 uint32_t
-i2c_get_pressure(struct device *dev, uint8_t oss, uint32_t *buffer)
+i2c_get_pressure(struct device *dev, uint8_t oss, int32_t *buffer)
 {
 	uint8_t config = 0x34 + (oss << 6);
 	uint8_t MSB;
@@ -145,51 +143,46 @@ i2c_get_calibration(struct device *dev, struct BMP180_CALIBRATION *cal)
 {
 	uint8_t MSB;
 	uint8_t LSB;
+	uint16_t * field_ptr;
 	int err;
-	
-	err = i2c_get_value(dev,BMP180_AC1H,1,&MSB);
-	err = i2c_get_value(dev,BMP180_AC1L,1,&LSB);
-	cal->AC1 = (MSB << 8)+LSB;
+	char types[] = "iiiuuuiiiii";
+	int j = 0;
 
-	i2c_get_value(dev,BMP180_AC2H,1,&MSB);
-	i2c_get_value(dev,BMP180_AC2L,1,&LSB);
-	cal->AC2 = (MSB << 8)+LSB;
+	for ( int i = 0; i <= BMP180_CAL_MAX; i = i + 2)
+	{
+		field_ptr = ((uint16_t *)cal) + j;
+		err = i2c_get_value(dev,BMP180_CAL_START_ADDR + i, 1, &MSB);
+		if ( err != 0 )
+		{
+			printf("Error Reading Cal\n");
+			return -1;
+		}
 
-	i2c_get_value(dev,BMP180_AC3H,1,&MSB);
-	i2c_get_value(dev,BMP180_AC3L,1,&LSB);
-	cal->AC3 = (MSB << 8)+LSB;
+		err = i2c_get_value(dev,BMP180_CAL_START_ADDR + i + 1, 1, &LSB);
+		if ( err != 0 )
+		{
+			printf("Error Reading Cal\n");
+			return -1;
+		}
+		
+		// Check for errors in bytes
+		if (MSB == 0x00 && LSB == 0x00)
+			return -1;
 
-	i2c_get_value(dev,BMP180_AC4H,1,&MSB);
-	i2c_get_value(dev,BMP180_AC4L,1,&LSB);
-	cal->AC4 = (MSB << 8)+LSB;
+		if (MSB == 0xFF && MSB == 0xFF)
+			return -1;
 
-	i2c_get_value(dev,BMP180_AC5H,1,&MSB);
-	i2c_get_value(dev,BMP180_AC5L,1,&LSB);
-	cal->AC5 = (MSB << 8)+LSB;
-
-	i2c_get_value(dev,BMP180_AC6H,1,&MSB);
-	i2c_get_value(dev,BMP180_AC6L,1,&LSB);
-	cal->AC6 = (MSB << 8)+LSB;
-
-	i2c_get_value(dev,BMP180_B1H,1,&MSB);
-	i2c_get_value(dev,BMP180_B1L,1,&LSB);
-	cal->B1 = (MSB << 8)+LSB;
-
-	i2c_get_value(dev,BMP180_B2H,1,&MSB);
-	i2c_get_value(dev,BMP180_B2L,1,&LSB);
-	cal->B2 = (MSB << 8)+LSB;
-
-	i2c_get_value(dev,BMP180_MBH,1,&MSB);
-	i2c_get_value(dev,BMP180_MBL,1,&LSB);
-	cal->MB = (MSB << 8)+LSB;
-
-	i2c_get_value(dev,BMP180_MCH,1,&MSB);
-	i2c_get_value(dev,BMP180_MCL,1,&LSB);
-	cal->MC = (MSB << 8)+LSB;
-
-	i2c_get_value(dev,BMP180_MDH,1,&MSB);
-	i2c_get_value(dev,BMP180_MDL,1,&LSB);
-	cal->MD = (MSB << 8)+LSB;
+		switch ( types[j] )
+		{
+			case 'i':
+				*(int16_t *)field_ptr = (MSB << 8) + LSB;
+				break;
+			case 'u':
+				*field_ptr = (MSB << 8) + LSB;
+				break;
+		}
+		j++;
+	}
 	
 	return 0;
 }
@@ -226,9 +219,6 @@ i2c_get_value(struct device *dev, uint8_t address, size_t length, uint8_t *buffe
 	if ( err != 0 )
 		return -1;
 
-	// Check returned values for sanity if no ioctl error
-	if (*buffer == 0x00 || *buffer == 0xFF)
-		return -1;
 	return err;
 }
 
