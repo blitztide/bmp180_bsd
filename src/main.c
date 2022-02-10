@@ -18,8 +18,16 @@
 static struct BMP180_CALIBRATION calibration;
 static struct BMP180_CONF configuration;
 
+
+void
+usage()
+{
+	printf("Usage: bmp180 [-o oss] [-d device]\n");
+	return;
+}
+
 int
-main()
+main(int argc, char *argv[])
 {
 
 	int err;
@@ -31,10 +39,29 @@ main()
 	volatile uint32_t P;
 	volatile uint32_t RP;
 	volatile double A;
+	int ch;
 
-	strcpy(dev.name, "/dev/iic0");
+	while ((ch = getopt(argc,argv, "o:d:")) != -1)
+	{
+		switch(ch)
+		{
+			case 'o':
+				configuration.oss = atoi(optarg);
+				break;
+			case 'd':
+				strcpy(dev.name,optarg);
+				break;
+			default:
+				usage();
+				exit(-1);
+				break;
+		}
+	}
+
+	argc -= optind;
+	argc += optind;
+
 	configuration.calib = &calibration;
-	configuration.oss = 3;
 
 	init_device(&dev);
 	
