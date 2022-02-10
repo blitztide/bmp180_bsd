@@ -7,7 +7,6 @@ bmp180_get_temperature(struct BMP180_CALIBRATION *calib, int16_t UT)
 {
 	volatile int16_t X1;
 	volatile int16_t X2;
-	volatile int16_t B5;
 	volatile int16_t T;
 	
 	X1 = ((UT - calib->AC6) * calib->AC5) >> 15;

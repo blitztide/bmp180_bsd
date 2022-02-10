@@ -28,7 +28,6 @@ init_device(struct device *dev)
 int
 close_device(struct device *dev)
 {
-	int err;
 
 	while ( close(dev->fd) != 0 )
 	{
@@ -37,9 +36,8 @@ close_device(struct device *dev)
 	}
 
 	dev->fd = 0;
-	printf("Closing Device\n");
 
-	return err;
+	return 0;
 }
 
 int
@@ -53,7 +51,7 @@ i2c_get_id(struct device *dev, uint8_t *buffer)
 }
 
 uint32_t
-i2c_get_temperature(struct device *dev, uint32_t *buffer)
+i2c_get_temperature(struct device *dev, int32_t *buffer)
 {
 	uint8_t buffer1 = BMP180_RDTEMP;
 	uint8_t MSB;
@@ -83,7 +81,7 @@ i2c_get_temperature(struct device *dev, uint32_t *buffer)
 }
 
 uint32_t
-i2c_get_pressure(struct device *dev, uint8_t oss, uint32_t *buffer)
+i2c_get_pressure(struct device *dev, uint8_t oss, int32_t *buffer)
 {
 	uint8_t config = 0x34 + (oss << 6);
 	uint8_t MSB;
