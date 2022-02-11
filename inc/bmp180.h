@@ -49,5 +49,6 @@ struct BMP180_CALIBRATION {
 
 struct BMP180_CONF {
 	int16_t oss;
+	uint32_t qnh; // Local pressure reference
 	struct BMP180_CALIBRATION *calib;
 };

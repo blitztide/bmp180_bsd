@@ -37,11 +37,12 @@ main(int argc, char *argv[])
 	volatile int16_t T;
 	int32_t UP;
 	volatile uint32_t P;
-	volatile uint32_t RP;
 	volatile double A;
 	int ch;
 
-	while ((ch = getopt(argc,argv, "o:d:")) != -1)
+	// Argument parsing
+
+	while ((ch = getopt(argc,argv, "o:d:q:")) != -1)
 	{
 		switch(ch)
 		{
@@ -49,7 +50,10 @@ main(int argc, char *argv[])
 				configuration.oss = atoi(optarg);
 				break;
 			case 'd':
-				strcpy(dev.name,optarg);
+				strncpy(dev.name,optarg,DEV_NAME_MAX);
+				break;
+			case 'q':
+				configuration.qnh = atoi(optarg);
 				break;
 			default:
 				usage();
@@ -60,6 +64,13 @@ main(int argc, char *argv[])
 
 	argc -= optind;
 	argc += optind;
+
+	if (optind == 1 )
+	{
+		// No arguments supplied
+		usage();
+		exit(-1);
+	}
 
 	configuration.calib = &calibration;
 
@@ -118,8 +129,7 @@ main(int argc, char *argv[])
 	printf("Pressure: %u hPa\n",P/100);
 
 	// Check Altitude
-	RP = 101000;	
-	A = get_altitude(P,RP);
+	A = get_altitude(P,configuration.qnh);
 	printf("Altitude: %f\n",A);
 
 

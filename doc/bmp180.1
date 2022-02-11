@@ -1,0 +1,37 @@
+.Dd Febuary 10, 2022
+.Dt bmp180 1
+.Os
+.Sh NAME
+.Nm bmp180
+.Nd bmp180 userspace driver
+.Sh SYNOPSIS
+.Nm
+.Op Fl o Ar oss_value
+.Op Fl d Ar i2c_device
+.Op Fl q Ar reference_pressure
+.Sh DESCRIPTION
+The
+.Nm
+utility to commpunicate with a BMP180 device using the 
+.Xr iic 4
+device,
+this will return the Temperature, Pressure and calculate altitude.
+.Pp
+The options are as follows:
+.Bl -tag -width indent
+.It Fl o
+Choose the Oversampling rate 0-3.
+.It Fl d
+Choose the i2c bus device /dev/iic0
+.It Fl q
+Select the reference ground pressure QNH in Pa
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh EXAMPLES
+Read from /dev/iic0 using 3 times oversampling and output to stdout:
+.Bd -literal -offset indent
+$bmp180 -o 3 -d /dev/iic0 -q 101325
+.Ed
+.Sh AUTHORS
+.An David Elliott Aq Mt david.elliott3040@gmail.com
