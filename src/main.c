@@ -113,7 +113,7 @@ main(int argc, char *argv[])
 	
 	T = bmp180_get_temperature(&calibration, UT);
 	T = T/10;
-	printf("Temperature: %u°C\n",T);
+	printf("Temperature: %u°C ",T);
 
 	// Start Pressure Check
 
@@ -126,7 +126,7 @@ main(int argc, char *argv[])
 	}
 
 	P = bmp180_calpressure(&calibration,UP,configuration.oss);
-	printf("Pressure: %u hPa\n",P/100);
+	printf("Pressure: %u hPa ",P/100);
 
 	// Check Altitude
 	A = get_altitude(P,configuration.qnh);
