@@ -1,8 +1,13 @@
+#include <fcntl.h>
 #include <stdio.h>
+#include <string.h>
 
+#include "../inc/device.h"
 #include "../inc/bmp180.h"
+#include "../inc/i2c.h"
 #include "../inc/temperature.h"
 #include "../inc/pressure.h"
+#include "../inc/security.h"
 
 static struct BMP180_CALIBRATION calibration;
 
@@ -10,11 +15,39 @@ int
 main(int argc, char *argv[])
 {
 	int errorcount;
+	int err;
 	long UT;
 	long T;
 	long UP;
 	long P;
 	short oss;
+	
+	// Opening i2c device test
+	printf("Testing file access\n");
+	struct device dev;
+	strncpy(dev.name,"/dev/iic0",9);
+	init_device(&dev);
+	if (dev.fd <= 0)
+	{
+		printf("Unable to access /dev/iic0\n");
+	}
+	
+	// Testing capsicum
+	err = init_capsicum();
+	if (err != 0)
+	{
+		printf("Error initialising capsicum\n");
+	} else {
+		printf("Capsicum Works!\n");
+	}
+	errorcount += err;
+
+	// Testing capsicum blocks open access
+	err = open("/dev/random", O_RDWR);
+	if ( err == 0 )
+	{
+		printf("Capsicum is not blocking");
+	}
 
 	printf("Testing calculations\n");
 	errorcount = 0;

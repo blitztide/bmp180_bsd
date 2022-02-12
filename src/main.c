@@ -14,6 +14,7 @@
 #include "../inc/temperature.h"
 #include "../inc/pressure.h"
 #include "../inc/altitude.h"
+#include "../inc/security.h"
 
 static struct BMP180_CALIBRATION calibration;
 static struct BMP180_CONF configuration;
@@ -75,6 +76,13 @@ main(int argc, char *argv[])
 	configuration.calib = &calibration;
 
 	init_device(&dev);
+	err = init_capsicum();
+	if (err != 0)
+	{
+		close_device(&dev);
+		exit(-1);
+	}
+
 	
 	if (dev.fd <= 0)
 	{
@@ -131,7 +139,6 @@ main(int argc, char *argv[])
 	// Check Altitude
 	A = get_altitude(P,configuration.qnh);
 	printf("Altitude: %f\n",A);
-
 
 	close_device(&dev);
 
